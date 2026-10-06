@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arthavest P2P | Interactive Demo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']},colors:{brand:{500:'#0284c7',900:'#0f172a',950:'#020617'}}}}}
+</script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{background:#020617}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}
+.glass{background:rgba(30,41,59,.7);backdrop-filter:blur(12px);border:1px solid rgba(51,65,85,.5)}
+.hidden{display:none!important}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80}
+</style>
+</head>
+<body class="text-slate-100 font-sans antialiased min-h-full flex flex-col selection:bg-emerald-500 selection:text-white">
+
+<header class="sticky top-0 z-40 bg-brand-900/90 backdrop-blur-md border-b border-slate-800">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+    <div class="flex items-center space-x-3 cursor-pointer" onclick="go('dashboard')">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20"><i class="fa-solid fa-chart-line text-brand-950 text-xl"></i></div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">Arthavest<span class="text-emerald-500">P2P</span></span>
+          <span class="text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full">Interactive Demo</span>
+        </div>
+        <p class="text-xs text-slate-400 hidden sm:block">Smart Alternate P2P Lending & Investment</p>
+      </div>
+    </div>
+    <nav class="hidden md:flex items-center space-x-2">
+      <button data-tab="dashboard" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-house-chimney mr-2"></i>Dashboard</button>
+      <button data-tab="marketplace" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-store mr-2"></i>Loan Pools</button>
+      <button data-tab="borrow" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-hand-holding-dollar mr-2"></i>Borrow</button>
+      <button data-tab="vault" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-shield-halved mr-2"></i>Security</button>
+    </nav>
+    <div class="flex items-center space-x-3">
+      <div class="bg-slate-900 border border-slate-700 p-1 rounded-xl flex">
+        <button onclick="toggleRole('lender')" id="role-lender-btn" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5"><i class="fa-solid fa-wallet"></i><span>Lender</span></button>
+        <button onclick="toggleRole('borrower')" id="role-borrower-btn" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5"><i class="fa-solid fa-file-invoice-dollar"></i><span>Borrower</span></button>
+      </div>
+      <button onclick="openModal('notification-modal')" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white relative">
+        <i class="fa-regular fa-bell"></i><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      </button>
+    </div>
+  </div>
+  <nav class="md:hidden flex overflow-x-auto gap-2 px-4 pb-3">
+    <button data-tab="dashboard" class="mnav-btn shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">Dashboard</button>
+    <button data-tab="marketplace" class="mnav-btn shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">Loan Pools</button>
+    <button data-tab="borrow" class="mnav-btn shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">Borrow</button>
+    <button data-tab="vault" class="mnav-btn shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium">Security</button>
+  </nav>
+</header>
+
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
+
+  <div class="mb-8 bg-gradient-to-r from-slate-900 via-brand-900 to-slate-900 border border-emerald-500/30 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center space-x-4">
+      <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0"><i class="fa-solid fa-building-columns text-emerald-400 text-xl"></i></div>
+      <div>
+        <span class="text-sm font-bold text-white">Escrow-style settlement concept (prototype)</span>
+        <p class="text-xs text-slate-400 mt-0.5">All figures, partners and balances are simulated sample data for design purposes.</p>
+      </div>
+    </div>
+    <button onclick="openModal('deposit-modal')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-lg shadow-emerald-600/20 flex items-center space-x-2 shrink-0"><i class="fa-solid fa-plus-circle"></i><span>Add Funds (eSewa/Khalti)</span></button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <section id="view-dashboard" class="space-y-8">
+    <div id="lender-view" class="space-y-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="glass rounded-2xl p-6 border-l-4 border-l-emerald-500"><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Wallet Balance</span><div class="text-2xl font-bold mt-2" id="stat-wallet"></div><div class="text-xs text-emerald-400 mt-3"><i class="fa-solid fa-arrow-up"></i> Ready to deploy</div></div>
+        <div class="glass rounded-2xl p-6 border-l-4 border-l-sky-500"><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Portfolio</span><div class="text-2xl font-bold mt-2" id="stat-portfolio"></div><div class="text-xs text-sky-400 mt-3" id="stat-count"></div></div>
+        <div class="glass rounded-2xl p-6 border-l-4 border-l-amber-500"><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Expected Annual Return</span><div class="text-2xl font-bold text-emerald-400 mt-2">15.4% p.a.</div><div class="text-xs text-slate-400 mt-3">Sample figure</div></div>
+        <div class="glass rounded-2xl p-6 border-l-4 border-l-purple-500"><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Lifetime Earnings</span><div class="text-2xl font-bold mt-2">NPR 84,250</div><div class="text-xs text-purple-400 mt-3"><i class="fa-solid fa-bolt"></i> Credited monthly</div></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="glass rounded-2xl p-6 lg:col-span-2">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400"><i class="fa-solid fa-robot"></i></div>
+              <div><h3 class="text-lg font-bold">Smart Auto-Invest</h3><p class="text-xs text-slate-400">Spreads idle cash across borrower notes.</p></div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="auto-toggle" checked onchange="toggleAutoInvest()" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+              <span class="text-xs text-slate-400">Risk Allocation</span>
+              <div class="text-sm font-bold text-emerald-400 mt-1" id="risk-label">Balanced (Grade A & B)</div>
+              <input type="range" min="1" max="3" value="2" oninput="updateRisk(this.value)" class="w-full mt-3 accent-emerald-500">
+              <div class="flex justify-between text-[10px] text-slate-500 mt-1"><span>Safe</span><span>Balanced</span><span>Yield</span></div>
+            </div>
+            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800"><span class="text-xs text-slate-400">Max Per Note</span><div class="text-lg font-bold mt-1">NPR 10,000</div><p class="text-[11px] text-slate-400 mt-2">Keeps exposure spread out.</p></div>
+            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800"><span class="text-xs text-slate-400">Target Rate</span><div class="text-lg font-bold mt-1">14% – 17.5%</div><p class="text-[11px] text-emerald-400 mt-2"><i class="fa-solid fa-check"></i> Reinvesting on</p></div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
+            <span class="text-xs text-slate-400">Status: <span id="auto-status" class="text-emerald-400 font-semibold">Active</span></span>
+            <button onclick="runAllocation()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl"><i class="fa-solid fa-rotate mr-1.5"></i>Run Allocation</button>
+          </div>
+        </div>
+        <div class="glass rounded-2xl p-6">
+          <h3 class="text-base font-bold mb-2">Fund Actions</h3>
+          <p class="text-xs text-slate-400 mb-6">Deposit via wallets or withdraw to a bank.</p>
+          <div class="space-y-3">
+            <button onclick="openModal('deposit-modal')" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-between"><span><i class="fa-solid fa-wallet mr-2"></i>Deposit NPR</span><i class="fa-solid fa-chevron-right"></i></button>
+            <button onclick="openModal('withdraw-modal')" class="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold text-xs flex items-center justify-between border border-slate-700"><span><i class="fa-solid fa-arrow-right-arrow-left mr-2 text-sky-400"></i>Withdraw to Bank</span><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div><h3 class="text-lg font-bold">Active Loan Notes</h3><p class="text-xs text-slate-400">Your lent capital.</p></div>
+          <button onclick="go('marketplace')" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold">Invest in more pools <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900/80 text-slate-400 uppercase font-semibold"><tr>
+              <th class="py-3 px-4">Borrower</th><th class="py-3 px-4">Grade</th><th class="py-3 px-4">Invested</th><th class="py-3 px-4">Rate</th><th class="py-3 px-4">Tenure</th><th class="py-3 px-4">Status</th><th class="py-3 px-4 text-right">Actions</th>
+            </tr></thead>
+            <tbody class="divide-y divide-slate-800/60" id="portfolio-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="borrower-view" class="space-y-8 hidden">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="glass rounded-2xl p-6 border-l-4 border-l-sky-500"><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Loan</span><div class="text-2xl font-bold mt-2">NPR 3,50,000</div><div class="text-xs text-sky-400 mt-2">Business Expansion – Thamel Retail</div></div>
+        <div class="glass rounded-2xl p-6 border-l-4 border-l-amber-500"><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Next EMI Due</span><div class="text-2xl font-bold text-amber-400 mt-2" id="next-due">2083/07/15 BS</div><div class="text-xs text-slate-400 mt-2">Amount: NPR 32,400</div></div>
+        <div class="glass rounded-2xl p-6 border-l-4 border-l-emerald-500"><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Credit Score</span><div class="text-2xl font-bold text-emerald-400 mt-2">785 / 900</div><div class="text-xs text-emerald-400 mt-2"><i class="fa-solid fa-star"></i> Excellent</div></div>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div><h3 class="text-lg font-bold">Repayment Schedule</h3><p class="text-xs text-slate-400">Monthly installments and status.</p></div>
+          <button onclick="payNextEMI()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl"><i class="fa-solid fa-credit-card mr-1.5"></i>Pay Next EMI (NPR 32,400)</button>
+        </div>
+        <div class="space-y-3" id="repay-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARKETPLACE -->
+  <section id="view-marketplace" class="space-y-8 hidden">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div><h2 class="text-2xl font-extrabold">Loan Pools Marketplace</h2><p class="text-xs text-slate-400 mt-1">Sample Nepali retail, SME and personal loans.</p></div>
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0" id="filters"></div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="market-grid"></div>
+  </section>
+
+  <!-- BORROW -->
+  <section id="view-borrow" class="hidden">
+    <div class="max-w-3xl mx-auto glass rounded-2xl p-6 sm:p-8 shadow-2xl">
+      <div class="text-center mb-8">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-hand-holding-dollar text-white text-2xl"></i></div>
+        <h2 class="text-2xl font-extrabold">Loan Application</h2>
+        <p class="text-xs text-slate-400 mt-1">Get an instant estimate and list your loan note.</p>
+      </div>
+      <form onsubmit="submitLoan(event)" class="space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Loan Amount (NPR)</label>
+            <input type="number" id="loan-amount" required min="50000" max="2000000" value="300000" oninput="calcEMI()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-emerald-500">
+            <span class="text-[10px] text-slate-500 mt-1 block">50,000 – 20,00,000</span>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Tenure</label>
+            <select id="loan-tenure" onchange="calcEMI()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-emerald-500">
+              <option value="6">6 Months</option><option value="12" selected>12 Months</option><option value="18">18 Months</option><option value="24">24 Months</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Purpose</label>
+            <select id="loan-purpose" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-emerald-500">
+              <option>Retail Shop Expansion</option><option>Working Capital</option><option>Personal Emergency</option><option>Consumer Electronics</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-2">Monthly Net Income (NPR)</label>
+            <input type="number" id="loan-income" required min="25000" value="95000" oninput="calcEMI()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+        <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div><span class="text-xs text-slate-400 uppercase tracking-wider">Estimated Monthly EMI</span><div class="text-2xl font-extrabold text-emerald-400 mt-1" id="prev-emi"></div><span class="text-[11px] text-slate-500">Estimated rate: 14.5% p.a.</span></div>
+          <div class="sm:text-right"><span class="text-xs text-slate-400 uppercase tracking-wider">Estimated Tier</span><div class="text-base font-bold mt-1" id="prev-tier"></div><div class="text-[11px] mt-1" id="prev-ratio"></div></div>
+        </div>
+        <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm shadow-xl shadow-emerald-600/20">Submit Application</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- SECURITY -->
+  <section id="view-vault" class="hidden">
+    <div class="max-w-4xl mx-auto space-y-8">
+      <div class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-3 text-emerald-400 text-2xl"><i class="fa-solid fa-shield-halved"></i></div>
+        <h2 class="text-2xl font-extrabold">Security & Compliance</h2>
+        <p class="text-xs text-slate-400 mt-1">Planned controls for the platform (illustrative in this demo).</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass rounded-2xl p-6 space-y-3"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-lock"></i></div><div><h3 class="font-bold text-sm">Encryption</h3><p class="text-xs text-slate-400">TLS in transit, encryption at rest.</p></div></div><div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs flex justify-between"><span class="text-slate-400">Status</span><span class="text-amber-400 font-semibold">Planned</span></div></div>
+        <div class="glass rounded-2xl p-6 space-y-3"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center"><i class="fa-solid fa-id-card"></i></div><div><h3 class="font-bold text-sm">KYC Verification</h3><p class="text-xs text-slate-400">Citizenship / National ID checks.</p></div></div><div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs flex justify-between"><span class="text-slate-400">Status</span><span class="text-amber-400 font-semibold">Planned</span></div></div>
+        <div class="glass rounded-2xl p-6 space-y-3"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center"><i class="fa-solid fa-landmark"></i></div><div><h3 class="font-bold text-sm">Escrow / Trustee Account</h3><p class="text-xs text-slate-400">Lender funds held separately.</p></div></div><div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs flex justify-between"><span class="text-slate-400">Partner</span><span class="font-semibold">To be appointed</span></div></div>
+        <div class="glass rounded-2xl p-6 space-y-3"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center"><i class="fa-solid fa-scale-balanced"></i></div><div><h3 class="font-bold text-sm">Regulatory Approval</h3><p class="text-xs text-slate-400">Licensing with Nepal Rastra Bank.</p></div></div><div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs flex justify-between"><span class="text-slate-400">Status</span><span class="text-amber-400 font-semibold">Not yet obtained</span></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Modals -->
+<div id="invest-modal" class="modal fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="glass w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+    <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <h3 class="text-lg font-bold">Invest in Loan Pool</h3><p class="text-xs text-slate-400" id="m-title"></p>
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-2 text-xs my-5">
+      <div class="flex justify-between"><span class="text-slate-400">Rate</span><span class="text-emerald-400 font-bold" id="m-rate"></span></div>
+      <div class="flex justify-between"><span class="text-slate-400">Tenure</span><span id="m-tenure"></span></div>
+      <div class="flex justify-between"><span class="text-slate-400">Grade</span><span class="text-amber-400" id="m-grade"></span></div>
+      <div class="flex justify-between"><span class="text-slate-400">Remaining to fund</span><span id="m-remain"></span></div>
+      <div class="flex justify-between"><span class="text-slate-400">Wallet</span><span id="m-wallet"></span></div>
+    </div>
+    <label class="block text-xs font-semibold text-slate-300 mb-2">Amount (NPR)</label>
+    <input type="number" id="invest-amt" value="10000" min="1000" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-emerald-500">
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeModals()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl">Cancel</button>
+      <button onclick="confirmInvest()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-xl">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="deposit-modal" class="modal fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="glass w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+    <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <h3 class="text-lg font-bold">Deposit Funds</h3><p class="text-xs text-slate-400">Simulated top-up</p>
+    <label class="block text-xs font-semibold text-slate-300 mt-5 mb-2">Gateway</label>
+    <div class="grid grid-cols-3 gap-3" id="gw-row"></div>
+    <label class="block text-xs font-semibold text-slate-300 mt-4 mb-2">Amount (NPR)</label>
+    <input type="number" id="deposit-amt" value="25000" min="1000" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-emerald-500">
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeModals()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl">Cancel</button>
+      <button onclick="processDeposit()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-xl">Deposit</button>
+    </div>
+  </div>
+</div>
+
+<div id="withdraw-modal" class="modal fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="glass w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+    <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <h3 class="text-lg font-bold">Withdraw to Bank</h3><p class="text-xs text-slate-400">Simulated ConnectIPS transfer</p>
+    <label class="block text-xs font-semibold text-slate-300 mt-5 mb-2">Amount (NPR)</label>
+    <input type="number" id="withdraw-amt" value="50000" min="1000" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-emerald-500">
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeModals()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl">Cancel</button>
+      <button onclick="processWithdraw()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-xl">Withdraw</button>
+    </div>
+  </div>
+</div>
+
+<div id="notification-modal" class="modal fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="glass w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+    <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <h3 class="text-lg font-bold mb-4">Notifications</h3>
+    <div class="space-y-3 max-h-64 overflow-y-auto" id="notif-list"></div>
+    <button onclick="closeModals()" class="w-full mt-4 py-3 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl">Close</button>
+  </div>
+</div>
+
+<div id="toast" class="hidden bg-slate-800 border border-emerald-500/40 text-sm text-white px-4 py-3 rounded-xl shadow-xl max-w-[90vw]"></div>
+
+<footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+  <div class="max-w-7xl mx-auto px-4">&copy; 2026 Arthavest P2P — prototype with simulated data. Not a licensed lending or investment service.</div>
+</footer>
+
+<script>
+const fmt = n => 'NPR ' + Math.round(n).toLocaleString('en-IN');
+const S = { role:'lender', tab:'dashboard', wallet:145000, portfolio:680000, gateway:'esewa', pool:null, filter:'all', auto:true };
+
+const pools = [
+  {id:'NP-8821',borrower:'Sita Electronics & Mobile Hub',loc:'New Road, Kathmandu',purpose:'Retail Inventory Restocking',amount:450000,funded:382500,rate:14.5,tenure:12,grade:'Grade A',score:810},
+  {id:'NP-8934',borrower:'Himalayan Organic Agro Farm',loc:'Pokhara-9, Kaski',purpose:'Greenhouse Irrigation Expansion',amount:800000,funded:520000,rate:16.0,tenure:18,grade:'Grade B',score:760},
+  {id:'NP-9012',borrower:'Lalitpur Artisan Handicrafts',loc:'Patan, Lalitpur',purpose:'Export Packaging & Raw Material',amount:300000,funded:285000,rate:13.8,tenure:6,grade:'Grade A',score:835},
+  {id:'NP-9150',borrower:'Everest Cafe & Bakery',loc:'Thamel, Kathmandu',purpose:'Commercial Baking Equipment',amount:600000,funded:180000,rate:17.5,tenure:12,grade:'Grade C',score:715},
+  {id:'NP-9204',borrower:'Butwal IT Solutions & Training',loc:'Amarpath, Butwal',purpose:'Lab Upgrades & Laptops',amount:500000,funded:410000,rate:15.0,tenure:12,grade:'Grade B',score:775},
+  {id:'NP-9311',borrower:'Annapurna Trekking Gear',loc:'Lakeside, Pokhara',purpose:'Seasonal Stock Prep',amount:350000,funded:350000,rate:14.0,tenure:6,grade:'Grade A',score:820}
+];
+const portfolio = [
+  {id:'NP-8801',borrower:'Kathmandu Book Depot',invested:25000,rate:14.2,tenure:12,grade:'Grade A'},
+  {id:'NP-8742',borrower:'Patan Garment Exports',invested:50000,rate:15.8,tenure:18,grade:'Grade B'},
+  {id:'NP-8690',borrower:'Bhaktapur Ceramic Arts',invested:15000,rate:13.5,tenure:6,grade:'Grade A'}
+];
+const schedule = [
+  {no:1,due:'2083/05/15 BS',status:'Paid'},{no:2,due:'2083/06/15 BS',status:'Paid'},
+  {no:3,due:'2083/07/15 BS',status:'Due Soon'},{no:4,due:'2083/08/15 BS',status:'Upcoming'}
+];
+const notifs = [
+  {t:'Monthly EMI Credited',a:'+NPR 4,250',c:'text-emerald-400',d:'Pool #NP-8821 installment cleared.',w:'2 hours ago'},
+  {t:'Auto-Invest Deployed',a:'-NPR 10,000',c:'text-sky-400',d:'Allocated to Grade A pool #NP-9012 at 13.8% p.a.',w:'Yesterday'}
+];
+const gradeCls = {'Grade A':'bg-emerald-500/10 text-emerald-400 border-emerald-500/20','Grade B':'bg-sky-500/10 text-sky-400 border-sky-500/20','Grade C':'bg-amber-500/10 text-amber-400 border-amber-500/20'};
+const statusCls = {Paid:'text-emerald-400 bg-emerald-500/10 border-emerald-500/20','Due Soon':'text-amber-400 bg-amber-500/10 border-amber-500/20',Upcoming:'text-slate-400 bg-slate-800 border-slate-700'};
+const $ = id => document.getElementById(id);
+
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.remove('hidden'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.add('hidden'),3500); }
+function go(tab){ S.tab=tab; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+function toggleRole(r){ S.role=r; S.tab='dashboard'; render(); }
+function openModal(id){ if(id==='notification-modal') renderNotifs(); if(id==='deposit-modal') renderGateways(); const m=$(id); m.classList.remove('hidden'); m.classList.add('flex'); }
+function closeModals(){ document.querySelectorAll('.modal').forEach(m=>{m.classList.add('hidden');m.classList.remove('flex');}); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModals(); });
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) closeModals(); }));
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+
+function render(){
+  const L = S.role==='lender';
+  $('role-lender-btn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 ' + (L?'bg-emerald-500 text-brand-950':'text-slate-400 hover:text-white');
+  $('role-borrower-btn').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 ' + (!L?'bg-sky-500 text-brand-950':'text-slate-400 hover:text-white');
+  $('lender-view').classList.toggle('hidden',!L);
+  $('borrower-view').classList.toggle('hidden',L);
+  ['dashboard','marketplace','borrow','vault'].forEach(t=>$('view-'+t).classList.toggle('hidden',t!==S.tab));
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    const on=b.dataset.tab===S.tab;
+    b.className='nav-btn px-4 py-2 rounded-lg text-sm font-medium transition '+(on?'bg-sky-500/10 text-emerald-400 border border-emerald-500/30':'text-slate-300 hover:text-white hover:bg-slate-800/60');
+  });
+  document.querySelectorAll('.mnav-btn').forEach(b=>{
+    const on=b.dataset.tab===S.tab;
+    b.className='mnav-btn shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium '+(on?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30':'bg-slate-800 text-slate-300 border border-slate-700');
+  });
+  $('stat-wallet').textContent=fmt(S.wallet);
+  $('stat-portfolio').textContent=fmt(S.portfolio);
+  $('stat-count').innerHTML='<i class="fa-solid fa-shield-halved"></i> '+(14+portfolio.length-3)+' Active Loan Notes';
+  renderPortfolio(); renderFilters(); renderMarket(); renderRepay();
+}
+
+function renderPortfolio(){
+  $('portfolio-body').innerHTML = portfolio.map(p=>`
+    <tr class="hover:bg-slate-800/40">
+      <td class="py-3 px-4 font-semibold"><div>${p.borrower}</div><div class="text-[10px] text-slate-400 font-normal">Note ${p.id}</div></td>
+      <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold border ${gradeCls[p.grade]}">${p.grade}</span></td>
+      <td class="py-3 px-4 font-bold">${fmt(p.invested)}</td>
+      <td class="py-3 px-4 text-emerald-400 font-semibold">${p.rate}% p.a.</td>
+      <td class="py-3 px-4 text-slate-300">${p.tenure} mo</td>
+      <td class="py-3 px-4 text-emerald-400"><i class="fa-solid fa-circle text-[8px]"></i> Performing</td>
+      <td class="py-3 px-4 text-right"><button onclick="noteDetails('${p.id}')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold">Details</button></td>
+    </tr>`).join('');
+}
+
+function renderFilters(){
+  const f=[['all','All Pools'],['Grade A','Grade A (Low Risk)'],['Grade B','Grade B (Balanced)'],['Grade C','Grade C (High Yield)']];
+  $('filters').innerHTML=f.map(([k,l])=>`<button onclick="setFilter('${k}')" class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold border ${S.filter===k?'bg-emerald-500/20 text-emerald-400 border-emerald-500/30':'bg-slate-800 text-slate-300 border-slate-700'}">${l}</button>`).join('');
+}
+function setFilter(k){ S.filter=k; renderFilters(); renderMarket(); }
+
+function renderMarket(){
+  const list = S.filter==='all'?pools:pools.filter(p=>p.grade===S.filter);
+  $('market-grid').innerHTML = list.map(p=>{
+    const pct=Math.round(p.funded/p.amount*100), full=p.funded>=p.amount;
+    return `<div class="glass rounded-2xl p-6 flex flex-col justify-between hover:border-emerald-500/50 transition">
+      <div>
+        <div class="flex items-center justify-between mb-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold border ${gradeCls[p.grade]}">${p.grade}</span><span class="text-xs text-slate-400"><i class="fa-solid fa-location-dot mr-1"></i>${p.loc}</span></div>
+        <h3 class="font-bold text-base mb-1">${p.borrower}</h3><p class="text-xs text-slate-400 mb-4">${p.purpose}</p>
+        <div class="grid grid-cols-2 gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800 mb-4 text-xs">
+          <div><span class="text-slate-400 block">Interest</span><span class="text-emerald-400 font-bold text-sm">${p.rate}% p.a.</span></div>
+          <div><span class="text-slate-400 block">Tenure</span><span class="font-semibold">${p.tenure} Months</span></div>
+        </div>
+        <div class="space-y-1.5 mb-5">
+          <div class="flex justify-between text-xs"><span class="text-slate-400">Funded: ${fmt(p.funded)}</span><span class="font-semibold">${pct}%</span></div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width:${pct}%"></div></div>
+          <div class="flex justify-between text-[10px] text-slate-500"><span>Target: ${fmt(p.amount)}</span><span>Score: ${p.score}</span></div>
+        </div>
+      </div>
+      <button ${full?'disabled':''} onclick="openInvest('${p.id}')" class="w-full py-3 ${full?'bg-slate-700 text-slate-400 cursor-not-allowed':'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20'} font-bold text-xs rounded-xl">${full?'Fully Funded':'<i class="fa-solid fa-circle-plus mr-1"></i> Invest Now'}</button>
+    </div>`;}).join('');
+}
+
+function renderRepay(){
+  $('repay-list').innerHTML = schedule.map(s=>`
+    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 flex items-center justify-between text-xs gap-3">
+      <div class="flex items-center gap-4"><div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center font-bold shrink-0">${s.no}/12</div>
+      <div><div class="font-bold">Due: ${s.due}</div><div class="text-slate-400">Installment: <span class="text-emerald-400 font-semibold">NPR 32,400</span></div></div></div>
+      <span class="px-3 py-1 rounded-full font-semibold border whitespace-nowrap ${statusCls[s.status]}">${s.status}</span>
+    </div>`).join('');
+  const next=schedule.find(s=>s.status==='Due Soon')||schedule.find(s=>s.status==='Upcoming');
+  $('next-due').textContent = next?next.due:'All paid';
+}
+
+function renderNotifs(){
+  $('notif-list').innerHTML = notifs.map(n=>`<div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs space-y-1"><div class="flex justify-between font-bold"><span>${n.t}</span><span class="${n.c}">${n.a}</span></div><p class="text-slate-400">${n.d}</p><span class="text-[10px] text-slate-500">${n.w}</span></div>`).join('');
+}
+function renderGateways(){
+  $('gw-row').innerHTML=['esewa','khalti','connectips'].map(g=>`<button type="button" onclick="S.gateway='${g}';renderGateways()" class="p-3 rounded-xl border text-center text-xs font-bold ${S.gateway===g?'border-emerald-500 bg-emerald-500/10 text-emerald-400':'border-slate-700 bg-slate-900 text-slate-300'}">${{esewa:'eSewa',khalti:'Khalti',connectips:'ConnectIPS'}[g]}</button>`).join('');
+}
+
+function openInvest(id){
+  const p=pools.find(x=>x.id===id); S.pool=p;
+  $('m-title').textContent=p.borrower+' ('+p.id+')';
+  $('m-rate').textContent=p.rate+'% p.a.'; $('m-tenure').textContent=p.tenure+' Months'; $('m-grade').textContent=p.grade;
+  $('m-remain').textContent=fmt(p.amount-p.funded); $('m-wallet').textContent=fmt(S.wallet);
+  openModal('invest-modal');
+}
+function confirmInvest(){
+  const amt=parseInt($('invest-amt').value), p=S.pool;
+  if(!amt||amt<1000) return toast('Minimum investment is NPR 1,000.');
+  if(amt>S.wallet) return toast('Insufficient wallet balance. Add funds first.');
+  if(amt>p.amount-p.funded) return toast('Amount exceeds what is left to fund ('+fmt(p.amount-p.funded)+').');
+  S.wallet-=amt; S.portfolio+=amt; p.funded+=amt;
+  portfolio.unshift({id:p.id,borrower:p.borrower,invested:amt,rate:p.rate,tenure:p.tenure,grade:p.grade});
+  closeModals(); render(); toast('Invested '+fmt(amt)+' in '+p.id);
+}
+function processDeposit(){
+  const amt=parseInt($('deposit-amt').value);
+  if(!amt||amt<1000) return toast('Minimum deposit is NPR 1,000.');
+  S.wallet+=amt; closeModals(); render(); toast('Deposited '+fmt(amt)+' via '+S.gateway.toUpperCase()+' (simulated).');
+}
+function processWithdraw(){
+  const amt=parseInt($('withdraw-amt').value);
+  if(!amt||amt<=0) return toast('Enter a valid amount.');
+  if(amt>S.wallet) return toast('Amount exceeds wallet balance.');
+  S.wallet-=amt; closeModals(); render(); toast('Withdrawal of '+fmt(amt)+' initiated (simulated).');
+}
+function noteDetails(id){ const p=portfolio.find(x=>x.id===id); toast(p.borrower+': '+fmt(p.invested)+' at '+p.rate+'% for '+p.tenure+' months.'); }
+
+function toggleAutoInvest(){
+  S.auto=$('auto-toggle').checked; const s=$('auto-status');
+  s.textContent=S.auto?'Active':'Paused'; s.className=(S.auto?'text-emerald-400':'text-amber-400')+' font-semibold';
+}
+function updateRisk(v){ $('risk-label').textContent={1:'Conservative (Grade A only)',2:'Balanced (Grade A & B)',3:'Aggressive (A, B & C)'}[v]; S.risk=v; }
+function runAllocation(){
+  if(!S.auto) return toast('Auto-Invest is paused. Turn it on first.');
+  const allowed={1:['Grade A'],2:['Grade A','Grade B'],3:['Grade A','Grade B','Grade C']}[S.risk||2];
+  const open=pools.filter(p=>allowed.includes(p.grade)&&p.funded<p.amount);
+  const per=10000; let spent=0, n=0;
+  for(const p of open){
+    if(S.wallet-spent<per||n>=3) break;
+    const amt=Math.min(per,p.amount-p.funded); p.funded+=amt; spent+=amt; n++;
+    portfolio.unshift({id:p.id,borrower:p.borrower,invested:amt,rate:p.rate,tenure:p.tenure,grade:p.grade});
+  }
+  if(!n) return toast('No eligible pools or insufficient wallet balance.');
+  S.wallet-=spent; S.portfolio+=spent; render(); toast('Auto-Invest deployed '+fmt(spent)+' across '+n+' pool'+(n>1?'s':'')+'.');
+}
+
+function payNextEMI(){
+  const next=schedule.find(s=>s.status==='Due Soon')||schedule.find(s=>s.status==='Upcoming');
+  if(!next) return toast('All visible installments are paid.');
+  next.status='Paid';
+  const up=schedule.find(s=>s.status==='Upcoming'); if(up) up.status='Due Soon';
+  renderRepay(); toast('EMI for installment '+next.no+' paid (simulated).');
+}
+
+function calcEMI(){
+  const p=parseFloat($('loan-amount').value)||0, n=parseInt($('loan-tenure').value), inc=parseFloat($('loan-income').value)||0;
+  const r=0.145/12, emi=p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+  $('prev-emi').textContent=fmt(emi);
+  const ratio=inc?emi/inc:1;
+  let tier,score,cls;
+  if(ratio<=0.25){tier='Grade A';score=780;cls='text-emerald-400';}
+  else if(ratio<=0.4){tier='Grade B';score=740;cls='text-sky-400';}
+  else {tier='Grade C';score=700;cls='text-amber-400';}
+  $('prev-tier').textContent=tier+' (~'+score+' score)';
+  $('prev-ratio').className='text-[11px] mt-1 '+cls;
+  $('prev-ratio').textContent='EMI is '+Math.round(ratio*100)+'% of monthly income';
+}
+function submitLoan(e){
+  e.preventDefault();
+  const amt=parseFloat($('loan-amount').value), n=parseInt($('loan-tenure').value);
+  const ratio=(function(){const r=0.145/12;return amt*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1)/parseFloat($('loan-income').value);})();
+  const grade=ratio<=0.25?'Grade A':ratio<=0.4?'Grade B':'Grade C';
+  pools.unshift({id:'NP-'+(9400+pools.length),borrower:'You (new application)',loc:'Nepal',purpose:$('loan-purpose').value,amount:amt,funded:0,rate:14.5,tenure:n,grade:grade,score:grade==='Grade A'?780:grade==='Grade B'?740:700});
+  S.filter='all'; go('marketplace'); toast('Application submitted. Your note is now listed (simulated).');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{ render(); calcEMI(); });
+</script>
+
+<div style="position:fixed;left:16px;bottom:16px;z-index:60" class="flex gap-2">
+  <button onclick="startTour()" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg"><i class="fa-solid fa-route mr-1"></i>Guided tour</button>
+  <button onclick="resetDemo()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700">Reset demo</button>
+</div>
+<div id="tour" class="hidden fixed z-[70] inset-x-4 bottom-20 sm:left-auto sm:right-6 sm:w-96 glass rounded-2xl p-5 shadow-2xl">
+  <div class="text-[10px] uppercase tracking-wider text-emerald-400 font-bold" id="tour-step"></div>
+  <h4 class="font-bold mt-1" id="tour-title"></h4>
+  <p class="text-xs text-slate-300 mt-2" id="tour-text"></p>
+  <div class="flex justify-between mt-4">
+    <button onclick="endTour()" class="text-xs text-slate-400 hover:text-white">Skip</button>
+    <div class="flex gap-2"><button onclick="tourMove(-1)" class="px-3 py-1.5 bg-slate-800 rounded-lg text-xs">Back</button><button onclick="tourMove(1)" class="px-3 py-1.5 bg-emerald-600 rounded-lg text-xs font-bold" id="tour-next">Next</button></div>
+  </div>
+</div>
+<script>
+const KEY='arthavest-demo-v1';
+const seed=JSON.stringify({S:{wallet:S.wallet,portfolio:S.portfolio},portfolio:portfolio,pools:pools.map(p=>[p.id,p.funded]),schedule:schedule.map(x=>x.status)});
+function saveDemo(){try{localStorage.setItem(KEY,JSON.stringify({S:{wallet:S.wallet,portfolio:S.portfolio},portfolio:portfolio,pools:pools,schedule:schedule}));}catch(e){}}
+function loadDemo(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d)return;S.wallet=d.S.wallet;S.portfolio=d.S.portfolio;portfolio.splice(0,portfolio.length,...d.portfolio);pools.splice(0,pools.length,...d.pools);d.schedule.forEach((x,i)=>{if(schedule[i])schedule[i].status=x.status;});}catch(e){}}
+function resetDemo(){try{localStorage.removeItem(KEY);}catch(e){}location.reload();}
+const _render=render;render=function(){_render();saveDemo();};
+document.addEventListener('DOMContentLoaded',()=>{loadDemo();render();});
+const steps=[
+ {tab:'dashboard',role:'lender',t:'Lender dashboard',x:'Lenders see wallet, portfolio, expected return and their active loan notes in one place.'},
+ {tab:'dashboard',role:'lender',t:'Auto-Invest',x:'Set a risk level and let the engine spread idle cash across eligible pools in small amounts. Try "Run Allocation".'},
+ {tab:'marketplace',role:'lender',t:'Loan pools',x:'Browse sample pools by risk grade, see funding progress and invest. Your balance and portfolio update.'},
+ {tab:'borrow',role:'borrower',t:'Borrower application',x:'Borrowers get an instant EMI estimate. The tier depends on EMI as a share of income. Submitting lists a new pool.'},
+ {tab:'dashboard',role:'borrower',t:'Repayments',x:'Borrowers track installments and pay the next EMI.'},
+ {tab:'vault',role:'lender',t:'Compliance roadmap',x:'Licensing, KYC, escrow and encryption are shown as planned items. This demo moves no real money.'}
+];
+let ti=0;
+function showStep(){const s=steps[ti];S.role=s.role;S.tab=s.tab;render();$('tour').classList.remove('hidden');$('tour-step').textContent='Step '+(ti+1)+' of '+steps.length;$('tour-title').textContent=s.t;$('tour-text').textContent=s.x;$('tour-next').textContent=ti===steps.length-1?'Finish':'Next';}
+function startTour(){ti=0;showStep();}
+function tourMove(d){ti+=d;if(ti<0)ti=0;if(ti>=steps.length){endTour();return;}showStep();}
+function endTour(){$('tour').classList.add('hidden');}
+</script>
+</body>
+</html>
